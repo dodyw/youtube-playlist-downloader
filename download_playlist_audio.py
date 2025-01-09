@@ -6,15 +6,19 @@ import sys
 import os
 
 def create_ydl_opts():
-    # Create output/mp4 directory if it doesn't exist
-    os.makedirs('output/mp4', exist_ok=True)
+    # Create output/mp3 directory if it doesn't exist
+    os.makedirs('output/mp3', exist_ok=True)
     
     return {
-        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',  # Best quality
-        'merge_output_format': 'mp4',  # Merge video and audio into mp4
+        'format': 'bestaudio/best',  # Best audio quality
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '320',  # Highest quality MP3
+        }],
         'ignoreerrors': True,  # Skip videos that can't be downloaded
         'progress_hooks': [progress_hook],  # Progress callback
-        'outtmpl': 'output/mp4/%(title)s.%(ext)s',  # Save in output/mp4 folder
+        'outtmpl': 'output/mp3/%(title)s.%(ext)s',  # Save in output/mp3 folder
     }
 
 def progress_hook(d):
@@ -31,21 +35,21 @@ def progress_hook(d):
 
 @click.command()
 @click.argument('playlist_url')
-def download_playlist(playlist_url):
+def download_playlist_audio(playlist_url):
     """
-    Download all videos from a YouTube playlist in the best available quality.
+    Download audio in MP3 format from all videos in a YouTube playlist.
     
     PLAYLIST_URL: The URL of the YouTube playlist to download
     """
     try:
-        print(f"Starting download of playlist: {playlist_url}")
+        print(f"Starting audio download of playlist: {playlist_url}")
         with YoutubeDL(create_ydl_opts()) as ydl:
             ydl.download([playlist_url])
-        print("\nPlaylist download completed successfully!")
+        print("\nPlaylist audio download completed successfully!")
         
     except Exception as e:
         print(f"\nError downloading playlist: {str(e)}", file=sys.stderr)
         sys.exit(1)
 
 if __name__ == '__main__':
-    download_playlist()
+    download_playlist_audio()
